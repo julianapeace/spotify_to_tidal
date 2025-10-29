@@ -348,16 +348,16 @@ async def sync_favorites(spotify_session: spotipy.Spotify, tidal_session: tidala
     else:
         print("No new tracks to add to Tidal favorites")
 
-def sync_playlists_wrapper(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, playlists, config: dict):
+async def sync_playlists_wrapper(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, playlists, config: dict):
   for spotify_playlist, tidal_playlist in playlists:
     # sync the spotify playlist to tidal
-    asyncio.run(sync_playlist(spotify_session, tidal_session, spotify_playlist, tidal_playlist, config) )
+    await sync_playlist(spotify_session, tidal_session, spotify_playlist, tidal_playlist, config)
 
-def sync_favorites_wrapper(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, config):
-    asyncio.run(main=sync_favorites(spotify_session=spotify_session, tidal_session=tidal_session, config=config))
+async def sync_favorites_wrapper(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, config):
+    await sync_favorites(spotify_session=spotify_session, tidal_session=tidal_session, config=config)
 
-def get_tidal_playlists_wrapper(tidal_session: tidalapi.Session) -> Mapping[str, tidalapi.Playlist]:
-    tidal_playlists = asyncio.run(get_all_playlists(tidal_session.user))
+async def get_tidal_playlists_wrapper(tidal_session: tidalapi.Session) -> Mapping[str, tidalapi.Playlist]:
+    tidal_playlists = await get_all_playlists(tidal_session.user)
     return {playlist.name: playlist for playlist in tidal_playlists}
 
 def pick_tidal_playlist_for_spotify_playlist(spotify_playlist, tidal_playlists: Mapping[str, tidalapi.Playlist]):
@@ -368,10 +368,10 @@ def pick_tidal_playlist_for_spotify_playlist(spotify_playlist, tidal_playlists: 
     else:
       return (spotify_playlist, None)
 
-def get_user_playlist_mappings(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, config):
+async def get_user_playlist_mappings(spotify_session: spotipy.Spotify, tidal_session: tidalapi.Session, config):
     results = []
-    spotify_playlists = asyncio.run(get_playlists_from_spotify(spotify_session, config))
-    tidal_playlists = get_tidal_playlists_wrapper(tidal_session)
+    spotify_playlists = await get_playlists_from_spotify(spotify_session, config)
+    tidal_playlists = await get_tidal_playlists_wrapper(tidal_session)
     for spotify_playlist in spotify_playlists:
         results.append( pick_tidal_playlist_for_spotify_playlist(spotify_playlist, tidal_playlists) )
     return results
